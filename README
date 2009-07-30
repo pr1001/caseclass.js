@@ -4,5 +4,23 @@ Create a case class based upon a name and property list like so:
 	CaseClass.create("Person", ["name", "age"]);
 
 The class can be used like so:
-	new CaseClass.Stuff("Barack Obama", 47);
+	var obama = new CaseClass.Person("Barack Obama", 47);
+	var mccain = new CaseClass.Person("John McCain", 72);
+	var obama2 = new CaseClass.Person("Barack Obama", 47);
+	
+The instances of case classes can be compared using the equals method:
+	obama.equals(mccain); // -> false
+	obama.equals(obama2); // -> true
+
+Case classes can be matched against each other like so:
+	obama.match(
+		{
+			caseTest: mccain,
+			caseFunction: function() { return 1; }
+		},
+		{
+			caseTest: obama2,
+			caseFunction: function() { return 2; }
+		},
+	); // -> 2
 

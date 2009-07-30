@@ -38,6 +38,28 @@ var CaseClass = {
 			return false;
 		}
 		
+		// @param a variable number of {caseTest: someObject, caseFunction: someFunc} tuples
+		anonFunc.prototype.match = function() {
+			if (arguments.length == 0) { throw new Error("at least one case tuple required"); }
+			for (var k = 0; k < arguments.length; k++)
+			{
+				try {
+					var caseTuple = arguments[k];
+					var caseTest = caseTuple.caseTest;
+					var caseFunction = caseTuple.caseFunction;
+				} catch (e) {
+					throw new Error("malformed case tuple");
+					// stop matching
+					return false;
+				}
+				
+				// if our case class equals the case test provided, call and return the case function provided
+				if (this.equals(caseTest)) {
+					return caseFunction();
+				}
+			}
+		}
+		
 		return anonFunc;
 	},
 	
