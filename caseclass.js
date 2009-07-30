@@ -3,7 +3,7 @@ var CaseClass = {
 		for (var k = 0; k < arguments.length; k++)
 		{
 			this[this.propertyNames[k]] = arguments[k];
-		}
+		}		
 	},
 	
 	caseclassSub: function() {
@@ -14,6 +14,30 @@ var CaseClass = {
 		{
 			anonFunc.prototype[args[k]] = null;
 		}
+		
+		/* equality function */
+		anonFunc.prototype.equals = function() {
+			var args = Array.prototype.slice.call(arguments);
+			if (args.length == 0) { throw new Error("comparison object required"); }
+			var anObject = args.shift();
+			
+			if (this == anObject)
+			{
+				return true;
+			}
+			// if both objects have the same number of defined properties then they could be equal, investigate
+			else if (this.propertyNames.length == anObject.propertyNames.length) {
+				for (var k = 0; k < this.propertyNames.length; k++) {
+					// if any of the properites do not match, the objects are not equal
+					if (this[this.propertyNames[k]] != anObject[anObject.propertyNames[k]]) {
+						return false;
+					}
+				}
+				return true;
+			}			
+			return false;
+		}
+		
 		return anonFunc;
 	},
 	
