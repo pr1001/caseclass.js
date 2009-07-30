@@ -1,0 +1,8 @@
+cassclass.js is an attempt to duplicate the functionality of Scala's case classes in Javascript. This is a work in progress and so far only the class construction works:
+
+Create a case class based upon a name and property list like so:
+	CaseClass.create("Person", ["name", "age"]);
+
+The class can be used like so:
+	new CaseClass.Stuff("Barack Obama", 47);
+
