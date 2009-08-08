@@ -1,3 +1,6 @@
+// to extend native objects with equals() method so that they can use match()
+// String.prototype.equals = function(str2) { return (this == str2); }
+
 var CaseClass = {
 	caseclassSub2: function() {
 		for (var k = 0; k < arguments.length; k++)
@@ -54,10 +57,54 @@ var CaseClass = {
 				}
 				
 				// if our case class equals the case test provided, call and return the case function provided
-				if (this.equals(caseTest)) {
+				// ideally we'd actually check if caseTest is a case class instnace, rather than just an object
+				if (typeof(caseTest) == "object" && this.equals(caseTest)) {
 					return caseFunction();
 				}
+				// else if we're able to use the case class's extractor on caseTest to get some variables that we should pass on to caseFunction
+				// NOTE: every extracted variable must have a toString method that gives a string that is able to be eval'ed to be reconstructed
+				else if (typeof(caseTest) == "string" && this.unapply(caseTest)) {
+  				var extracted = this.unapply(caseTest);
+  				return eval("caseFunction(" + extracted.join(", ") + ")");
+				}
 			}
+		}
+						
+		/*
+			Following Scala's case classes, the unapply method is used to test for equality and to extract the class class's properties.
+			For example usage, see the README document.
+			For more on case classes, see "Matching Objects with Patterns": http://lamp.epfl.ch/~emir/written/MatchingObjectsWithPatterns-TR.pdf
+		*/
+		anonFunc.prototype.unapply = function(extractor_pattern) {
+  		var items = extractor_pattern.split(',');
+  		// check that the user hasn't passed in an excessive amount of parameters
+  		if (items.length > this.propertyNames.length) { throw new Error("More parameters passed than there are properties in the case class") }
+  		var newitems = []; // currently unused, perhaps useful for future features such as conditional extractors
+  		var extracted = [];
+  		// go through all extractor items
+  		for (var k = 0; k < items.length; k++) {
+    		// trim string
+    		var item = items[k].replace(/^\s+|\s+$/g, '');
+        // if the item looks like a variable name
+    		if (item.match(/^\d*[a-z][a-z0-9]*$/i)) {
+      		// then we assign it the value of the appropriate property of the case class
+      		var tmp = this[this.propertyNames[k]];
+      		// wrap strings in quotation marks
+      		if (typeof(tmp) == "string") { tmp = "'" + escape(tmp) + "'"; }
+      		extracted.push(tmp);
+      		newitems.push({type: 'var', name: item, value: this[this.propertyNames[k]]}) // see variable declaration above
+    		}
+    		// else just use item as-is for our matching
+    		else {
+      		// remove any quotation marks at the beginning or end of the string
+      		item = item.replace(/^[\'\"]+|[\'\"]+$/g, '');
+      		// return false if item does not equal the equivalent propety of the case class
+      		if (item != this[this.propertyNames[k]]) { return false }
+      		newitems.push({type: 'val', name: this.propertyNames[k], value: item}) // see variable declaration above
+    		}
+  		}
+  		if (extracted.length == 0) { extracted = false }
+  		return extracted;
 		}
 		
 		return anonFunc;

@@ -28,3 +28,52 @@ Case classes can be matched against each other like so:
 		},
 	); // -> 2
 
+Case tests in the form of comma-seperated strings can be used to extract values while still matching against the case class instance's properties:
+  obama.match(
+    {
+      caseTest: "name, 72",
+      caseFunction: function(name) { return name + " is 72 years old."; }
+    }
+  ) // -> no match
+  
+  mccain.match(
+    {
+      caseTest: "name, 72",
+      caseFunction: function(name) { return name + " is 72 years old."; }
+    }
+  ) // -> "John McCain is 72 years old."
+
+  obama.match(
+    {
+      caseTest: "'Barack Obama', age",
+      caseFunction: function(age) { return "Barack Obama is " + age + " years old."; }
+    }
+  ) // -> "Barack Obama is 47 years old."
+
+Case tests in a matching operation can be a mixture of case class instances and string-based tests:
+  obama.match(
+    {
+      caseTest: "name, 72",
+      caseFunction: function(name) { return name + " is 72 years old."; }
+    },
+    {
+      caseTest: obama2,
+      caseFunction: function() { return "var obama is the same as var obama2"; }
+    }
+  ) // -> "var obama is the same as var obama2"
+    
+Case functions that respond to extracting case tests must currently take parameters in the exact same order:
+  obama.match(
+    {
+      caseTest: "name, age",
+      caseFunction: function(age, name) { return age + " years ago " + name + " was born."; }
+    }
+  ) // -> "Barack Obama years ago 47 was born."
+
+Case functions that respond to extracting case tests will receive as many arguments as the case test extracts values:
+  mccain.match(
+    {
+      caseTest: "name, 72",
+      caseFunction: function(name, age) { return name + " is " + age + " years old."; }
+    }
+  ) // -> "John McCain is undefined years old."
