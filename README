@@ -3,12 +3,16 @@ cassclass.js is an attempt to duplicate the functionality of Scala's case classe
 Create a case class based upon a name and property list like so:
 	CaseClass.create("Person", ["name", "age"]);
 
-The class can be used like so:
+Instances of the case class can be created like so:
 	var obama = new CaseClass.Person("Barack Obama", 47);
 	var mccain = new CaseClass.Person("John McCain", 72);
 	var obama2 = new CaseClass.Person("Barack Obama", 47);
 	
-The instances of case classes can be compared using the equals method:
+The class instance properties are easily accessible:
+  obama.name // -> "Barack Obama"
+  mccain.age // -> 72
+
+The case class instances can be compared using the equals method:
 	obama.equals(mccain); // -> false
 	obama.equals(obama2); // -> true
 
