@@ -2,20 +2,26 @@
 // String.prototype.equals = function(str2) { return (this == str2); }
 
 var CaseClass = {
-	caseclassSub2: function() {
+	caseclass: function() {
 		for (var k = 0; k < arguments.length; k++)
 		{
 			this[this.propertyNames[k]] = arguments[k];
-		}		
+		}
 	},
 	
-	caseclassSub: function() {
-		var args = arguments[0];
-		var anonFunc = this.caseclassSub2;
+	constructClass: function() {
+		var className = arguments[0];
+		var args = arguments[1];
+		var anonFunc = this.caseclass;
+		anonFunc.prototype.className = className;
 		anonFunc.prototype.propertyNames = args;
 		for (var k = 0; k < args.length; k++)
 		{
 			anonFunc.prototype[args[k]] = null;
+		}
+		
+		anonFunc.prototype.toString = function() {
+  		return this.className + "(" + this.propertyNames.map(function(key) { return this[key] }, this).join(", ") + ")";
 		}
 		
 		/* equality function */
@@ -28,8 +34,8 @@ var CaseClass = {
 			{
 				return true;
 			}
-			// if both objects have the same number of defined properties then they could be equal, investigate
-			else if (this.propertyNames.length == anObject.propertyNames.length) {
+			// else if both objects are of the same case class and have the same number of defined properties then they could be equal, investigate
+			else if (this.className == anObject.className && this.propertyNames.length == anObject.propertyNames.length) {
 				for (var k = 0; k < this.propertyNames.length; k++) {
 					// if any of the properites do not match, the objects are not equal
 					if (this[this.propertyNames[k]] != anObject[anObject.propertyNames[k]]) {
@@ -76,6 +82,17 @@ var CaseClass = {
 			For more on case classes, see "Matching Objects with Patterns": http://lamp.epfl.ch/~emir/written/MatchingObjectsWithPatterns-TR.pdf
 		*/
 		anonFunc.prototype.unapply = function(extractor_pattern) {
+  		// regex to look for class declaration in the format CaseClass(extractor_pattern)
+  		var re = /^(\w+)(?:\()(.*?)\)$/
+  		var result = re.exec(extractor_pattern)
+  		// then they did specify the class
+  		if (result) {
+    		// if our class name doesn't match the class name in the pattern, return false
+    		if (this.className != result[1]) { return false }
+    		// reassign extractor_pattern the pattern we found between the parenthesis
+    		extractor_pattern = result[2]
+  		}
+  		
   		var items = extractor_pattern.split(',');
   		// check that the user hasn't passed in an excessive amount of parameters
   		if (items.length > this.propertyNames.length) { throw new Error("More parameters passed than there are properties in the case class") }
@@ -89,8 +106,8 @@ var CaseClass = {
     		if (item.match(/^\d*[a-z][a-z0-9]*$/i)) {
       		// then we assign it the value of the appropriate property of the case class
       		var tmp = this[this.propertyNames[k]];
-      		// wrap strings in quotation marks
-      		if (typeof(tmp) == "string") { tmp = "'" + escape(tmp) + "'"; }
+      		// wrap strings in quotation marks and escape any single quotes (and yes, it's silly how I did it)
+      		if (typeof(tmp) == "string") { tmp = "'" + tmp.split('').map(function(chr) { return chr.replace("'", "\\'") }).join('') + "'"; }
       		extracted.push(tmp);
       		newitems.push({type: 'var', name: item, value: this[this.propertyNames[k]]}) // see variable declaration above
     		}
@@ -120,6 +137,6 @@ var CaseClass = {
 		var args = Array.prototype.slice.call(arguments);
 		if (args == 0) { throw new Error("case class name required"); }
 		var className = args.shift();
-		this[className] = this.caseclassSub(args.shift());
+		this[className] = this.constructClass(className, args.shift());
 	}
 }

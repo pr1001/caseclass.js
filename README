@@ -77,3 +77,18 @@ Case functions that respond to extracting case tests will receive as many argume
       caseFunction: function(name, age) { return name + " is " + age + " years old."; }
     }
   ) // -> "John McCain is undefined years old."
+  
+The case test can specify the case class to match against. When not specified, the case class of the matching object is assumed:
+  obama.match(
+    {
+      caseTest: "Person(name, age)",
+      caseFunction: function(name, age) { return name + " is " + age + " year old." }
+    }
+  ) // -> "Barack Obama is 47 years old."
+
+  obama.match(
+    {
+      caseTest: "Politician(name, age)",
+      caseFunction: function(name, age) { return name + " is " + age + " year old." }
+    }
+  ) // -> no match
