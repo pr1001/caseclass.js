@@ -92,3 +92,15 @@ The case test can specify the case class to match against. When not specified, t
       caseFunction: function(name, age) { return name + " is " + age + " year old." }
     }
   ) // -> no match
+  
+By default case classes are not added to the global ('window') namespace. If you would like them to be added, simply set the flag to true. You may still use the name-spaced form. For example:
+  CaseClass.globals = true;
+  CaseClass.create("Person", ["name", "age"]);
+  var obama = new Person("Barack Obama", 47);
+  var obama2 = new CaseClass.Person("Barack Obama", 47);
+  obama.match(
+    {
+      caseTest: obama2,
+      caseFunction: function() { return true; }
+    }
+  ) // -> true

@@ -2,6 +2,8 @@
 // String.prototype.equals = function(str2) { return (this == str2); }
 
 var CaseClass = {
+  globals: false,
+
 	caseclass: function() {
 		for (var k = 0; k < arguments.length; k++)
 		{
@@ -138,5 +140,6 @@ var CaseClass = {
 		if (args == 0) { throw new Error("case class name required"); }
 		var className = args.shift();
 		this[className] = this.constructClass(className, args.shift());
+		if (this.globals) { window[className] = this[className]; }
 	}
 }
