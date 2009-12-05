@@ -93,6 +93,29 @@ The case test can specify the case class to match against. When not specified, t
     }
   ) // -> no match
   
+You may also just check the case class, in which case nothing will be passed to the function. Parenthesis are required:
+  obama.match(
+    {
+      caseTest: "Person()",
+      caseFunction: function() { return true }
+    }
+  ) // -> true
+  
+  obama.match(
+    {
+      caseTest: "Person",
+      caseFunction: function() { return true }
+    }
+  ) // -> Error: More parameters passed than there are properties in the case class
+  
+You can pass the case class directly:
+  obama.match(
+    {
+      caseTest: CaseClass.Person,
+      caseFunction: function() { return true }
+    }
+  ) // -> true
+  
 By default case classes are not added to the global ('window') namespace. If you would like them to be added, simply set the flag to true. You may still use the name-spaced form. For example:
   CaseClass.globals = true;
   CaseClass.create("Person", ["name", "age"]);

@@ -65,15 +65,22 @@ var CaseClass = {
 				}
 				
 				// if our case class equals the case test provided, call and return the case function provided
-				// ideally we'd actually check if caseTest is a case class instnace, rather than just an object
+				// ideally we'd actually check if caseTest is a case class instance, rather than just an object
 				if (typeof(caseTest) == "object" && this.equals(caseTest)) {
 					return caseFunction();
+				}
+				// else if our case class is an instance of the caseTest,
+				//   implying we've been passed the constructor since the previous test failed so it's not another instance
+				else if ((typeof(caseTest) == "function") && (this instanceof caseTest)) {
+  				return caseFunction();
 				}
 				// else if we're able to use the case class's extractor on caseTest to get some variables that we should pass on to caseFunction
 				// NOTE: every extracted variable must have a toString method that gives a string that is able to be eval'ed to be reconstructed
 				else if (typeof(caseTest) == "string" && this.unapply(caseTest)) {
   				var extracted = this.unapply(caseTest);
-  				return eval("caseFunction(" + extracted.join(", ") + ")");
+  				if (extracted === true) { var tmpStr = ""; }
+  				else { var tmpStr = extracted.join(", "); }
+  				return eval("caseFunction(" + tmpStr + ")");
 				}
 			}
 		}
@@ -91,11 +98,22 @@ var CaseClass = {
   		if (result) {
     		// if our class name doesn't match the class name in the pattern, return false
     		if (this.className != result[1]) { return false }
+    		// if the user gave no pattern between the parentheis, return true
+    		if (result[2] == "") { return true }
     		// reassign extractor_pattern the pattern we found between the parenthesis
     		extractor_pattern = result[2]
   		}
-  		
+  		  		
   		var items = extractor_pattern.split(',');
+  		
+  		// special check for someone using a string to refer to the case class
+  		/*
+        if (items.length == 1 && this.propertyNames.length == 0 && items[0] == this.className) { 
+      		items = [];
+      		extracted = false;
+    		}
+      */
+  		
   		// check that the user hasn't passed in an excessive amount of parameters
   		if (items.length > this.propertyNames.length) { throw new Error("More parameters passed than there are properties in the case class") }
   		var newitems = []; // currently unused, perhaps useful for future features such as conditional extractors
@@ -119,6 +137,10 @@ var CaseClass = {
       		item = item.replace(/^[\'\"]+|[\'\"]+$/g, '');
       		// return false if item does not equal the equivalent propety of the case class
       		if (item != this[this.propertyNames[k]]) { return false }
+      		
+      		// wrap strings in quotation marks and escape any single quotes (and yes, it's silly how I did it)
+      		if (typeof(item) == "string") { item = "'" + item.split('').map(function(chr) { return chr.replace("'", "\\'") }).join('') + "'"; }
+      		extracted.push(item);
       		newitems.push({type: 'val', name: this.propertyNames[k], value: item}) // see variable declaration above
     		}
   		}
