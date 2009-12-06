@@ -4,10 +4,12 @@ Create a case class based upon a name and property list like so:
 	CaseClass.create("Person", ["name", "age"]);
 
 Instances of the case class can be created like so:
-	var obama = new CaseClass.Person("Barack Obama", 47);
-	var mccain = new CaseClass.Person("John McCain", 72);
-	var obama2 = new CaseClass.Person("Barack Obama", 47);
+	var obama = CaseClass.Person("Barack Obama", 47);
+	var mccain = CaseClass.Person("John McCain", 72);
+	var obama2 = CaseClass.Person("Barack Obama", 47);
 	
+Note that the 'new' keyword is not needed, just like with Scala's case classes.
+
 The class instance properties are easily accessible:
   obama.name // -> "Barack Obama"
   mccain.age // -> 72
@@ -119,8 +121,8 @@ You can pass the case class directly:
 By default case classes are not added to the global ('window') namespace. If you would like them to be added, simply set the flag to true. You may still use the name-spaced form. For example:
   CaseClass.globals = true;
   CaseClass.create("Person", ["name", "age"]);
-  var obama = new Person("Barack Obama", 47);
-  var obama2 = new CaseClass.Person("Barack Obama", 47);
+  var obama = Person("Barack Obama", 47);
+  var obama2 = CaseClass.Person("Barack Obama", 47);
   obama.match(
     {
       caseTest: obama2,

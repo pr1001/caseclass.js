@@ -5,6 +5,7 @@ var CaseClass = {
   globals: false,
 
 	caseclass: function() {
+  	arguments = Array.prototype.slice.call(arguments)[0];
 		for (var k = 0; k < arguments.length; k++)
 		{
 			this[this.propertyNames[k]] = arguments[k];
@@ -12,11 +13,13 @@ var CaseClass = {
 	},
 	
 	constructClass: function() {
+  	arguments = Array.prototype.slice.call(arguments);
 		var className = arguments[0];
 		var args = arguments[1];
 		var anonFunc = this.caseclass;
 		anonFunc.prototype.className = className;
 		anonFunc.prototype.propertyNames = args;
+		
 		for (var k = 0; k < args.length; k++)
 		{
 			anonFunc.prototype[args[k]] = null;
@@ -155,13 +158,16 @@ var CaseClass = {
 		Creates a Scala-style case class based upon a name and property list you provide:
 			CaseClass.create("Stuff", ["name", "age"]);
 		The class can be used like so:
-			new CaseClass.Stuff("Peter", 24);
+			CaseClass.Stuff("Peter", 24);
 	*/
 	create: function() {
 		var args = Array.prototype.slice.call(arguments);
 		if (args == 0) { throw new Error("case class name required"); }
 		var className = args.shift();
-		this[className] = this.constructClass(className, args.shift());
+		var myCaseClass = this.constructClass(className, args.shift());
+		this[className] = function() {
+  		return new myCaseClass(arguments);
+		}
 		if (this.globals) { window[className] = this[className]; }
 	}
 }
