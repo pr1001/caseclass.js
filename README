@@ -129,3 +129,27 @@ By default case classes are not added to the global ('window') namespace. If you
       caseFunction: function() { return true; }
     }
   ) // -> true
+  
+There is limited support for extractors when matching against other case class instances. If any extractors hints are found, global variables for _all_ the case class's properties are created _if_ the variables do not already exist. You must pass an undefined variable to the caseTest instance to indicate you want to extract a value rather than compare it. Because of this limitation, this extractor functionality is only useful if you need to match against an existing object when extracting unknown values and/or if you love/need the magic of closures in your caseFunction. Otherwise, see above for string-based case tests, which have better extractors:
+  delete name;
+  delete age;
+  var undef;
+  obama.match(
+    {
+      caseTest: CaseClass.Person(undef, 47),
+      caseFunction: function() { return "Did you know " + name + " is " + age + " years old?" }
+    }
+  ) // -> Did you know Barack Obama is 47 years old?
+  mccain.match(
+    {
+      caseTest: CaseClass.Person(undef, undef),
+      caseFunction: function() { return "Did you know " + name + " is " + age + " years old?" }
+    }
+  ) // -> Did you know John McCain is 72 years old?
+  obama2.match(
+    {
+      caseTest: CaseClass.Person("Barack Obama", 47),
+      caseFunction: function() { return "Did you know " + name + " is " + age + " years old?" }
+    }
+  ) // -> ReferenceError: age is not defined [NOTE: There is no error for name because window.name and document.name always exist.]
+While this is pretty cool that if works as well as it does given the limitations of Javascript, I'm not wild about this and am just inclined to start passing all arguments to the caseFunction when the caseTest is a case class instance, just like if it's a string.

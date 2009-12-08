@@ -67,11 +67,58 @@ var CaseClass = {
 					return false;
 				}
 				
+				// FIXME: should move all this to unapply and call unapply within the for loop above, only returning if unapply returned something
+				//   ie make use of unapply being a sort of partial function
 				// if our case class equals the case test provided, call and return the case function provided
 				// ideally we'd actually check if caseTest is a case class instance, rather than just an object
 				if (typeof(caseTest) == "object" && this.equals(caseTest)) {
 					return caseFunction();
 				}
+				
+				// if our case class is the same case class as the case test provided but not equals
+				// look for an extractor type call
+				else if (typeof(caseTest) == "object" && !this.equals(caseTest) && this.className == caseTest.className && this.propertyNames.length == caseTest.propertyNames.length) {
+  				// check that the user was using extractor format
+  				var extractors = false;
+  				var matchAll = true;
+  				
+  				for (var i = 0; i < caseTest.propertyNames.length; i++)
+  				{
+    				// the user passed an undefined, ie extractor, value to the constructor and if the local name isn't already set
+    				//   NOTE: using the dreaded eval() in order to have variable variable names while looking along the whole scope chain
+    				//     i.e. document[caseTest.propertyNames[i]] would only look at the highest level, I believe
+    				if(typeof caseTest[caseTest.propertyNames[i]] == "undefined" && typeof document[caseTest.propertyNames[i]] == "undefined")
+    				{
+              // extract the value
+      				window[caseTest.propertyNames[i]] = this[this.propertyNames[i]];
+      				extractors = true;
+    				}
+    				// else
+    				else
+    				{
+      				// if it has an equals method
+      				if (typeof caseTest[caseTest.propertyNames[i]] != "undefined" && caseTest[caseTest.propertyNames[i]].hasOwnProperty("equals") && typeof caseTest[caseTest.propertyNames[i]].equals == "function")
+      				{
+        				// check if the two values match
+        				// no guarantee that the object's equals method is a symmetrical test
+        				matchAll = caseTest[caseTest.propertyNames[i]].equals(this[this.propertyNames[i]]);
+        				if (matchAll & extractors) { window[caseTest.propertyNames[i]] = this[this.propertyNames[i]] }
+      				}
+      				else
+      				{
+        				// check if the two values match
+        				matchAll = (caseTest[caseTest.propertyNames[i]] == this[this.propertyNames[i]]);
+        				if (matchAll & extractors) { window[caseTest.propertyNames[i]] = this[this.propertyNames[i]] }
+      				}
+      				if (!matchAll) { break }
+    				}
+  				}
+  				
+  				if (matchAll) {
+    				return caseFunction();
+  				}
+				}
+				
 				// else if our case class is an instance of the caseTest,
 				//   implying we've been passed the constructor since the previous test failed so it's not another instance
 				else if ((typeof(caseTest) == "function") && (this instanceof caseTest)) {
