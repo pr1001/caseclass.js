@@ -128,9 +128,7 @@ var CaseClass = {
 				// NOTE: every extracted variable must have a toString method that gives a string that is able to be eval'ed to be reconstructed
 				else if (typeof(caseTest) == "string" && this.unapply(caseTest)) {
   				var extracted = this.unapply(caseTest);
-  				if (extracted === true) { var tmpStr = ""; }
-  				else { var tmpStr = extracted.join(", "); }
-  				return eval("caseFunction(" + tmpStr + ")");
+  				caseFunction.apply(null, extracted);
 				}
 			}
 		}
